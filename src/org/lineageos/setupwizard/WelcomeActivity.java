@@ -9,8 +9,15 @@ package org.lineageos.setupwizard;
 import static org.lineageos.setupwizard.SetupWizardApp.ACTION_EMERGENCY_DIAL;
 
 import android.content.Intent;
+import android.content.res.TypedArray;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Build;
+import android.text.Spannable;
+import android.text.SpannableStringBuilder;
+import android.text.style.ForegroundColorSpan;
+import android.text.style.RelativeSizeSpan;
+import android.text.style.StyleSpan;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -24,6 +31,9 @@ public class WelcomeActivity extends SubBaseActivity {
 
     private static final String ACTION_ACCESSIBILITY_SETTINGS =
             "android.settings.ACCESSIBILITY_SETTINGS_FOR_SUW";
+
+    private static final float WELCOME_LEAD_SCALE = 0.5f;
+    private static final float WELCOME_NAME_SCALE = 0.8f;
 
     @Override
     protected void onStartSubactivity() {
@@ -59,8 +69,7 @@ public class WelcomeActivity extends SubBaseActivity {
         if (SetupWizardUtils.isManagedProfile(this)) {
             welcomeTitle.setText(getString(R.string.setup_managed_profile_welcome_message));
         } else {
-            welcomeTitle.setText(getString(R.string.setup_welcome_message,
-                    getString(R.string.os_name)));
+            setWelcomeTitle(welcomeTitle);
         }
 
         if (Build.TYPE.equals("eng")) {
@@ -71,17 +80,15 @@ public class WelcomeActivity extends SubBaseActivity {
         }
     }
 
-    @Override
-    public void onBackPressed() {
-    }
+    private void setWelcomeTitle(TextView title) {
+        final String osName = getString(R.string.os_name);
+        final String message = getString(R.string.setup_welcome_message, osName);
+        final int nameStart = message.indexOf(osName);
+        if (nameStart < 0) {
+            title.setText(message);
+            return;
+        }
+        final int nameEnd = nameStart + osName.length();
+        final SpannableStringBuilder text = new SpannableStringBuilder(message);
 
-    @Override
-    protected int getLayoutResId() {
-        return R.layout.welcome_activity;
-    }
-
-    @Override
-    protected int getTitleResId() {
-        return -1;
-    }
-}
+        if (nameStart > 0 && nameEnd == message.length()

@@ -43,6 +43,7 @@
                         android:clickable="true">
 
                         <CheckBox
+                            android:fontFamily="@string/setup_font_family"
                             android:id="@+id/update_recovery_checkbox"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
@@ -51,6 +52,7 @@
                             style="@style/SudCheckBox.Multiline" />
 
                         <TextView
+                            android:fontFamily="@string/setup_font_family"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/update_recovery_setting"

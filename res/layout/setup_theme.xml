@@ -33,11 +33,13 @@
                     android:layout_height="wrap_content">
 
                     <RadioButton
+                        android:fontFamily="@string/setup_font_family"
                         android:id="@+id/radio_dark"
                         android:text="@string/dark"
                         style="@style/SudRadioButton" />
 
                     <RadioButton
+                        android:fontFamily="@string/setup_font_family"
                         android:id="@+id/radio_light"
                         android:text="@string/light"
                         style="@style/SudRadioButton" />

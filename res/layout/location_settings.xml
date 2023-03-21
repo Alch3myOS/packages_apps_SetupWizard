@@ -44,6 +44,7 @@
 
 
                         <CheckBox
+                            android:fontFamily="@string/setup_font_family"
                             android:id="@+id/location_checkbox"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
@@ -52,6 +53,7 @@
                             style="@style/SudCheckBox.Multiline" />
 
                         <TextView
+                            android:fontFamily="@string/setup_font_family"
                             android:id="@+id/location_summary"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
@@ -71,6 +73,7 @@
                         android:clickable="true">
 
                         <CheckBox
+                            android:fontFamily="@string/setup_font_family"
                             android:id="@+id/location_agps_checkbox"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
@@ -80,6 +83,7 @@
                             style="@style/SudCheckBox.Multiline" />
 
                         <TextView
+                            android:fontFamily="@string/setup_font_family"
                             android:id="@+id/location_agps_summary"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"

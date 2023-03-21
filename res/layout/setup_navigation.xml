@@ -47,12 +47,14 @@
                         android:layout_height="wrap_content">
 
                         <RadioButton
+                            android:fontFamily="@string/setup_font_family"
                             android:id="@+id/radio_gesture"
                             android:text="@string/gesture_navigation"
                             android:checked="true"
                             style="@style/SudRadioButton" />
 
                         <RadioButton
+                            android:fontFamily="@string/setup_font_family"
                             android:id="@+id/radio_sw_keys"
                             android:text="@string/navbar_navigation"
                             style="@style/SudRadioButton" />
@@ -60,6 +62,7 @@
                     </RadioGroup>
 
                     <CheckBox
+                        android:fontFamily="@string/setup_font_family"
                         android:id="@+id/hide_navigation_hint"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -80,4 +83,3 @@
 
     </LinearLayout>
 </com.google.android.setupdesign.GlifLayout>
-

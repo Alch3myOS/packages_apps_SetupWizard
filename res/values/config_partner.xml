@@ -8,4 +8,16 @@
     <bool name="dynamic_color_enabled">true</bool>
     <bool name="full_dynamic_color_enabled">true</bool>
     <bool name="show_payment_action">false</bool>
+
+    <string name="setup_font_family" translatable="false">Evolve-Sans</string>
+
+    <string name="setup_compat_footer_button_font_family" translatable="false">@string/setup_font_family</string>
+    <string name="setup_design_header_font_family" translatable="false">@string/setup_font_family</string>
+    <string name="setup_design_description_font_family" translatable="false">@string/setup_font_family</string>
+    <string name="setup_design_description_link_font_family" translatable="false">@string/setup_font_family</string>
+    <string name="setup_design_account_name_font_family" translatable="false">@string/setup_font_family</string>
+    <string name="setup_design_content_font_family" translatable="false">@string/setup_font_family</string>
+    <string name="setup_design_content_info_font_family" translatable="false">@string/setup_font_family</string>
+    <string name="setup_design_items_title_font_family" translatable="false">@string/setup_font_family</string>
+    <string name="setup_design_items_summary_font_family" translatable="false">@string/setup_font_family</string>
 </resources>

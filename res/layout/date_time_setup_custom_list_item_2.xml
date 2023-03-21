@@ -12,6 +12,7 @@
     android:gravity="center_vertical">
 
     <TextView
+        android:fontFamily="@string/setup_font_family"
         android:id="@android:id/text1"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -25,6 +26,7 @@
         android:minHeight="10dip"
         android:layout_below="@android:id/text1"
         android:layout_alignStart="@android:id/text1"
-        android:fontFamily="sans-serif-medium"
+        android:fontFamily="@string/setup_font_family"
+        android:textFontWeight="500"
         style="@style/SpinnerItem" />
 </TwoLineListItem>

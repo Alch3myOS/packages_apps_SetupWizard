@@ -49,12 +49,7 @@ public class LineageSettingsActivity extends BaseSetupWizardActivity {
         setNextText(R.string.next);
 
         String os_name = getString(R.string.os_name);
-        String privacyPolicy = getString(R.string.services_pp_explanation, os_name);
-        String privacyPolicyUri = getString(R.string.services_privacy_policy_uri);
-        String policySummary = getString(R.string.services_find_privacy_policy, privacyPolicyUri);
-        String servicesFullDescription = getString(R.string.services_full_description,
-                privacyPolicy, policySummary);
-        getGlifLayout().setDescriptionText(servicesFullDescription);
+        getGlifLayout().setDescriptionText(getString(R.string.services_pp_explanation, os_name));
 
         View metricsRow = findViewById(R.id.metrics);
         metricsRow.setOnClickListener(mMetricsClickListener);
@@ -103,31 +98,3 @@ public class LineageSettingsActivity extends BaseSetupWizardActivity {
     protected int getIconResId() {
         return R.drawable.ic_features;
     }
-
-    private void updateMetricsOption() {
-        final Bundle myPageBundle = mSetupWizardApp.getSettingsBundle();
-        boolean metricsChecked =
-                !myPageBundle.containsKey(KEY_SEND_METRICS) || myPageBundle
-                        .getBoolean(KEY_SEND_METRICS);
-        mMetrics.setChecked(metricsChecked);
-        myPageBundle.putBoolean(KEY_SEND_METRICS, metricsChecked);
-    }
-
-    private void updateDisableNavkeysOption() {
-        if (mSupportsKeyDisabler) {
-            final Bundle myPageBundle = mSetupWizardApp.getSettingsBundle();
-            boolean enabled = LineageSettings.System.getIntForUser(getContentResolver(),
-                    LineageSettings.System.FORCE_SHOW_NAVBAR, 0, UserHandle.USER_CURRENT) != 0;
-            boolean checked = myPageBundle.containsKey(DISABLE_NAV_KEYS) ?
-                    myPageBundle.getBoolean(DISABLE_NAV_KEYS) :
-                    enabled;
-            mNavKeys.setChecked(checked);
-            myPageBundle.putBoolean(DISABLE_NAV_KEYS, checked);
-        }
-    }
-
-    private static boolean isKeyDisablerSupported(Context context) {
-        final LineageHardwareManager hardware = LineageHardwareManager.getInstance(context);
-        return hardware.isSupported(LineageHardwareManager.FEATURE_KEY_DISABLE);
-    }
-}

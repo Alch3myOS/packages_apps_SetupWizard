@@ -8,6 +8,7 @@
     <style name="Theme.Setup" parent="@style/SudFullDynamicColorThemeGlifV3.DayNight">
         <item name="sucUsePartnerResource">true</item>
         <item name="sudUsePartnerHeavyTheme">true</item>
+        <item name="android:fontFamily">@string/setup_font_family</item>
     </style>
 
     <style name="SpinnerItem">
@@ -45,6 +46,7 @@
     </style>
 
     <style name="WelcomeTitle">
+        <item name="android:fontFamily">@string/setup_font_family</item>
         <item name="android:textSize">@dimen/welcome_title_text_size</item>
         <item name="android:textColor">?android:textColorPrimary</item>
         <item name="android:gravity">start</item>

@@ -14,6 +14,7 @@
     android:paddingEnd="16dp">
 
     <TextView
+        android:fontFamily="@string/setup_font_family"
         android:id="@+id/locale"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

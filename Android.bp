@@ -4,13 +4,13 @@
 //
 
 android_app {
-    name: "LineageSetupWizard",
+    name: "Alch3mySetupWizard",
 
     srcs: ["src/**/*.java"],
 
     certificate: "platform",
     privileged: true,
-    privapp_allowlist: "org.lineageos.setupwizard.xml",
+    privapp_allowlist: "org.alch3my.setupwizard.xml",
     system_ext_specific: true,
     platform_apis: true,
 

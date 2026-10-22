@@ -32,7 +32,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:adjustViewBounds="true"
-                android:scaleType="centerCrop"
+                android:scaleType="fitCenter"
                 android:src="@drawable/logo" />
 
             <Space
@@ -58,6 +58,7 @@
                 android:paddingBottom="@dimen/welcome_content_container_padding_bottom">
 
                 <TextView
+                    android:fontFamily="@string/setup_font_family"
                     style="@style/WelcomeTitle"
                     android:id="@+id/welcome_title"
                     android:layout_width="fill_parent"
@@ -74,6 +75,7 @@
                     android:orientation="vertical">
 
                     <Button
+                        android:fontFamily="@string/setup_font_family"
                         android:id="@+id/launch_accessibility"
                         style="@style/SudGlifButton.Secondary"
                         android:layout_width="fill_parent"
@@ -97,6 +99,7 @@
             android:layout_gravity="bottom">
 
             <Button
+                android:fontFamily="@string/setup_font_family"
                 android:id="@+id/emerg_dialer"
                 style="@style/SudGlifButton.Secondary"
                 android:layout_width="wrap_content"
@@ -109,6 +112,7 @@
                 android:layout_weight="1.0" />
 
             <Button
+                android:fontFamily="@string/setup_font_family"
                 android:id="@+id/skip"
                 style="@style/SudGlifButton.Secondary"
                 android:layout_width="wrap_content"
@@ -122,6 +126,7 @@
                 android:layout_weight="1.0" />
 
             <Button
+                android:fontFamily="@string/setup_font_family"
                 android:id="@id/start"
                 style="@style/SudGlifButton.Primary"
                 android:layout_width="wrap_content"

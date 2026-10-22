@@ -13,7 +13,8 @@
         android:paddingBottom="22dip" />
 
     <view
-        class="org.lineageos.setupwizard.widget.LocalePicker$CustomEditText"
+        class="org.alch3my.setupwizard.widget.LocalePicker$CustomEditText"
+        android:fontFamily="@string/setup_font_family"
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:textColor="?android:attr/textColorPrimary"
         android:id="@+id/localepicker_input"

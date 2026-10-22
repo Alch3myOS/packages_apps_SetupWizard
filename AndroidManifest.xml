@@ -5,7 +5,7 @@
      SPDX-License-Identifier: Apache-2.0
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="org.lineageos.setupwizard"
+    package="org.alch3my.setupwizard"
     android:versionCode="5"
     android:sharedUserId="android.uid.system">
 
@@ -13,6 +13,8 @@
     <uses-permission android:name="android.permission.STATUS_BAR" />
     <uses-permission android:name="android.permission.WRITE_SETTINGS" />
     <uses-permission android:name="android.permission.WRITE_SECURE_SETTINGS" />
+    <uses-permission android:name="android.permission.CHANGE_OVERLAY_PACKAGES" />
+    <uses-permission android:name="android.permission.SET_WALLPAPER" />
     <uses-permission android:name="android.permission.SET_TIME_ZONE" />
     <uses-permission android:name="android.permission.SET_TIME" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -30,21 +32,21 @@
     <uses-permission android:name="lineageos.permission.HARDWARE_ABSTRACTION_ACCESS" />
     <uses-permission android:name="android.permission.BACKUP" />
     <uses-permission android:name="android.permission.NETWORK_SETTINGS" />
-    <uses-permission android:name="lineageos.permission.FINISH_SETUP" />
+    <uses-permission android:name="org.alch3my.setupwizard.permission.FINISH_SETUP" />
     <uses-permission android:name="lineageos.permission.WRITE_SETTINGS" />
     <uses-permission android:name="lineageos.permission.WRITE_SECURE_SETTINGS" />
 
     <permission
-        android:name="lineageos.permission.FINISH_SETUP"
+        android:name="org.alch3my.setupwizard.permission.FINISH_SETUP"
         android:protectionLevel="signatureOrSystem" />
 
     <protected-broadcast
-        android:name="org.lineageos.setupwizard.LINEAGE_SETUP_COMPLETE"
-        android:permission="lineageos.permission.FINISH_SETUP" />
+        android:name="org.alch3my.setupwizard.ALCH3MY_SETUP_COMPLETE"
+        android:permission="org.alch3my.setupwizard.permission.FINISH_SETUP" />
 
     <protected-broadcast
-        android:name="org.lineageos.setupwizard.SETUP_FINISHED"
-        android:permission="lineageos.permission.FINISH_SETUP" />
+        android:name="org.alch3my.setupwizard.SETUP_FINISHED"
+        android:permission="org.alch3my.setupwizard.permission.FINISH_SETUP" />
 
     <application
         android:label="@string/app_name"
@@ -96,7 +98,7 @@
             android:exported="false"
             android:windowSoftInputMode="stateAlwaysHidden">
             <intent-filter>
-                <action android:name="org.lineageos.setupwizard.LINEAGE_BLUETOOTH_SETUP" />
+                <action android:name="org.alch3my.setupwizard.ALCH3MY_BLUETOOTH_SETUP" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
@@ -109,7 +111,7 @@
             android:exported="false"
             android:windowSoftInputMode="stateAlwaysHidden">
             <intent-filter>
-                <action android:name="org.lineageos.setupwizard.LINEAGE_WELCOME" />
+                <action android:name="org.alch3my.setupwizard.ALCH3MY_WELCOME" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
@@ -122,7 +124,7 @@
             android:exported="false"
             android:windowSoftInputMode="stateAlwaysHidden">
             <intent-filter>
-                <action android:name="org.lineageos.setupwizard.LINEAGE_LOCALE" />
+                <action android:name="org.alch3my.setupwizard.ALCH3MY_LOCALE" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
@@ -135,7 +137,7 @@
             android:exported="false"
             android:windowSoftInputMode="stateAlwaysHidden">
             <intent-filter>
-                <action android:name="org.lineageos.setupwizard.LINEAGE_DATETIME" />
+                <action android:name="org.alch3my.setupwizard.ALCH3MY_DATETIME" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
@@ -148,7 +150,7 @@
             android:exported="false"
             android:windowSoftInputMode="stateAlwaysHidden">
             <intent-filter>
-                <action android:name="org.lineageos.setupwizard.LINEAGE_SIM_MISSING" />
+                <action android:name="org.alch3my.setupwizard.ALCH3MY_SIM_MISSING" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
@@ -161,7 +163,7 @@
             android:exported="false"
             android:windowSoftInputMode="stateAlwaysHidden">
             <intent-filter>
-                <action android:name="org.lineageos.setupwizard.LINEAGE_NETWORK_SETUP" />
+                <action android:name="org.alch3my.setupwizard.ALCH3MY_NETWORK_SETUP" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
@@ -174,7 +176,7 @@
             android:exported="false"
             android:windowSoftInputMode="stateAlwaysHidden">
             <intent-filter>
-                <action android:name="org.lineageos.setupwizard.LINEAGE_LOCATION_SETTINGS" />
+                <action android:name="org.alch3my.setupwizard.ALCH3MY_LOCATION_SETTINGS" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
@@ -187,7 +189,7 @@
             android:exported="true"
             android:windowSoftInputMode="stateAlwaysHidden">
             <intent-filter>
-                <action android:name="org.lineageos.setupwizard.LINEAGE_RECOVERY_UPDATE" />
+                <action android:name="org.alch3my.setupwizard.ALCH3MY_RECOVERY_UPDATE" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
@@ -199,20 +201,20 @@
             android:exported="true"
             android:windowSoftInputMode="stateAlwaysHidden">
             <intent-filter>
-                <action android:name="org.lineageos.setupwizard.DEVICE_SPECIFIC" />
+                <action android:name="org.alch3my.setupwizard.DEVICE_SPECIFIC" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
 
         <activity
-            android:name=".LineageSettingsActivity"
+            android:name=".Alch3mySettingsActivity"
             android:label="@string/activity_label_empty"
             android:configChanges="mcc|mnc"
             android:immersive="true"
             android:exported="true"
             android:windowSoftInputMode="stateAlwaysHidden">
             <intent-filter>
-                <action android:name="org.lineageos.setupwizard.LINEAGE_SETTINGS" />
+                <action android:name="org.alch3my.setupwizard.ALCH3MY_SETTINGS" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
@@ -225,7 +227,20 @@
             android:exported="true"
             android:windowSoftInputMode="stateAlwaysHidden">
             <intent-filter>
-                <action android:name="org.lineageos.setupwizard.NAVIGATION_SETTINGS" />
+                <action android:name="org.alch3my.setupwizard.NAVIGATION_SETTINGS" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".PersonalizeActivity"
+            android:label="@string/activity_label_empty"
+            android:configChanges="mcc|mnc"
+            android:immersive="true"
+            android:exported="true"
+            android:windowSoftInputMode="stateAlwaysHidden">
+            <intent-filter>
+                <action android:name="org.alch3my.setupwizard.PERSONALIZE" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
@@ -238,7 +253,7 @@
             android:exported="false"
             android:windowSoftInputMode="stateAlwaysHidden">
             <intent-filter>
-                <action android:name="org.lineageos.setupwizard.LINEAGE_BIOMETRIC_SETTINGS" />
+                <action android:name="org.alch3my.setupwizard.ALCH3MY_BIOMETRIC_SETTINGS" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
@@ -251,7 +266,7 @@
             android:exported="false"
             android:windowSoftInputMode="stateAlwaysHidden">
             <intent-filter>
-                <action android:name="org.lineageos.setupwizard.LINEAGE_LOCKSCREEN_SETTINGS" />
+                <action android:name="org.alch3my.setupwizard.ALCH3MY_LOCKSCREEN_SETTINGS" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
@@ -264,7 +279,7 @@
             android:exported="true"
             android:windowSoftInputMode="stateAlwaysHidden">
             <intent-filter>
-                <action android:name="org.lineageos.setupwizard.LINEAGE_RESTORE_BACKUP" />
+                <action android:name="org.alch3my.setupwizard.ALCH3MY_RESTORE_BACKUP" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
@@ -277,7 +292,7 @@
             android:exported="true"
             android:windowSoftInputMode="stateAlwaysHidden">
             <intent-filter>
-                <action android:name="org.lineageos.setupwizard.THEME_SETTINGS" />
+                <action android:name="org.alch3my.setupwizard.THEME_SETTINGS" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
@@ -290,8 +305,8 @@
             android:exported="true"
             android:windowSoftInputMode="stateAlwaysHidden">
             <intent-filter>
-                <action android:name="org.lineageos.setupwizard.LINEAGE_SETUP_COMPLETE" />
-                <action android:name="org.lineageos.setupwizard.SETUP_FINISHED" />
+                <action android:name="org.alch3my.setupwizard.ALCH3MY_SETUP_COMPLETE" />
+                <action android:name="org.alch3my.setupwizard.SETUP_FINISHED" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>

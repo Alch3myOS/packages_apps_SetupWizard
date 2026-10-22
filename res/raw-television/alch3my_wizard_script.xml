@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+     SPDX-FileCopyrightText: 2016 The CyanogenMod Project
+     SPDX-FileCopyrightText: The LineageOS Project
+     SPDX-License-Identifier: Apache-2.0
+-->
+<WizardScript xmlns:wizard="http://schemas.android.com/apk/res/com.google.android.setupwizard"
+    wizard:firstAction="bluetooth_setup">
+
+    <WizardAction
+        wizard:uri="intent:#Intent;action=org.alch3my.setupwizard.ALCH3MY_BLUETOOTH_SETUP;end"
+        id="bluetooth_setup">
+        <result wizard:action="welcome" />
+    </WizardAction>
+
+    <WizardAction
+        wizard:uri="intent:#Intent;action=org.alch3my.setupwizard.ALCH3MY_WELCOME;end"
+        id="welcome">
+        <result wizard:action="locale" />
+    </WizardAction>
+    <WizardAction
+        wizard:uri="intent:#Intent;action=org.alch3my.setupwizard.ALCH3MY_LOCALE;end"
+        id="locale">
+        <result wizard:action="network_setup" />
+    </WizardAction>
+
+    <WizardAction
+        wizard:uri="intent:#Intent;action=org.alch3my.setupwizard.ALCH3MY_NETWORK_SETUP;end"
+        id="network_setup">
+        <result wizard:action="device_specific" />
+    </WizardAction>
+
+    <WizardAction
+        wizard:uri="intent:#Intent;action=org.alch3my.setupwizard.DEVICE_SPECIFIC;end"
+        id="device_specific">
+        <result wizard:action="recovery_update" />
+    </WizardAction>
+
+    <WizardAction
+        wizard:uri="intent:#Intent;action=org.alch3my.setupwizard.ALCH3MY_RECOVERY_UPDATE;end"
+        id="recovery_update">
+        <result wizard:action="alch3my_settings" />
+    </WizardAction>
+
+    <WizardAction
+        wizard:uri="intent:#Intent;action=org.alch3my.setupwizard.ALCH3MY_SETTINGS;end"
+        id="alch3my_settings">
+        <result wizard:action="finish" />
+    </WizardAction>
+
+    <WizardAction
+        wizard:uri="intent:#Intent;action=org.alch3my.setupwizard.ALCH3MY_SETUP_COMPLETE;end"
+        id="finish" />
+
+</WizardScript>

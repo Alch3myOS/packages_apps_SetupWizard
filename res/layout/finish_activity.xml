@@ -39,7 +39,41 @@
             android:gravity="center"
             android:padding="@dimen/content_margin_left"/>
 
-        <org.lineageos.setupwizard.NavigationLayout
+        <!-- Where to next: the home screen, or ArcaniumUI, once setup finishes -->
+        <LinearLayout
+            android:id="@+id/whats_new"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingBottom="16dp">
+
+            <TextView
+                android:id="@+id/whats_new_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@string/setup_font_family"
+                android:text="@string/whats_new_title"
+                android:textSize="20sp"
+                android:textColor="?android:attr/textColorPrimary" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@string/setup_font_family"
+                android:text="@string/whats_new_open"
+                android:textSize="14sp"
+                android:textColor="?android:attr/textColorSecondary"
+                android:paddingBottom="12dp" />
+
+            <LinearLayout
+                android:id="@+id/whats_new_cards"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:baselineAligned="false" />
+        </LinearLayout>
+
+        <org.alch3my.setupwizard.NavigationLayout
             android:id="@+id/navigation_bar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />

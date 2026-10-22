@@ -41,6 +41,7 @@
             android:orientation="vertical">
 
             <TextView
+                android:fontFamily="@string/setup_font_family"
                 style="@style/WelcomeTitle"
                 android:id="@+id/welcome_title"
                 android:layout_width="match_parent"
@@ -49,6 +50,7 @@
                 android:gravity="center" />
 
             <Button
+                android:fontFamily="@string/setup_font_family"
                 android:id="@+id/start"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -57,6 +59,7 @@
                 style="@style/SudGlifButton.Primary" />
 
             <Button
+                android:fontFamily="@string/setup_font_family"
                 android:id="@+id/skip"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -76,6 +79,7 @@
         android:visibility="gone">
 
         <Button
+            android:fontFamily="@string/setup_font_family"
             android:id="@+id/emerg_dialer"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -84,6 +88,7 @@
             style="@style/SudGlifButton.Secondary" />
 
         <Button
+            android:fontFamily="@string/setup_font_family"
             android:id="@+id/launch_accessibility"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

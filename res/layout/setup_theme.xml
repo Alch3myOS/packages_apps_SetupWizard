@@ -33,7 +33,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent">
 
-                    <view class="org.lineageos.setupwizard.widget.TouchBlockingFrameLayout"
+                    <view class="org.alch3my.setupwizard.widget.TouchBlockingFrameLayout"
                         android:id="@+id/frame"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content">
@@ -47,14 +47,14 @@
                             android:paddingBottom="@dimen/conversation_spacing_bottom"
                             android:orientation="vertical">
 
-                            <org.lineageos.setupwizard.widget.ConversationMessageView
+                            <org.alch3my.setupwizard.widget.ConversationMessageView
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 app:incoming="true"
                                 app:messageText="@string/accessibility_text_reading_conversation_message_1"
                                 app:iconBackgroundColor="@color/message_icon_background_incoming" />
 
-                            <org.lineageos.setupwizard.widget.ConversationMessageView
+                            <org.alch3my.setupwizard.widget.ConversationMessageView
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 app:incoming="false"
@@ -63,27 +63,17 @@
                         </LinearLayout>
                     </view>
 
-                    <RadioGroup
-                        android:id="@+id/theme_radio_group"
+                    <!-- Light and Dark tiles, added by ThemeSettingsActivity -->
+                    <FrameLayout
+                        android:id="@+id/theme_choices"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content">
-
-                        <RadioButton
-                            android:id="@+id/radio_dark"
-                            android:text="@string/dark"
-                            style="@style/SudRadioButton" />
-
-                        <RadioButton
-                            android:id="@+id/radio_light"
-                            android:text="@string/light"
-                            style="@style/SudRadioButton" />
-
-                    </RadioGroup>
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp" />
                 </LinearLayout>
             </ScrollView>
         </FrameLayout>
 
-        <org.lineageos.setupwizard.NavigationLayout
+        <org.alch3my.setupwizard.NavigationLayout
             android:id="@+id/navigation_bar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />

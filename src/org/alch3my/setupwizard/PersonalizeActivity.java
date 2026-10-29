@@ -96,6 +96,15 @@ public class PersonalizeActivity extends BaseSetupWizardActivity {
 
     private LinearLayout mSections;
     private ContentResolver mResolver;
+    private View mClockPreviewDot;
+    private View mSbBattery;
+    private TextView mSbPercent;
+    private View mShapePreview;
+    private TextView mClockSizePreview;
+    private View mBackPreviewLeft;
+    private View mBackPreviewRight;
+    private android.widget.FrameLayout mStyleMockWrap;
+    private TextView mFontSample;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -124,10 +133,10 @@ public class PersonalizeActivity extends BaseSetupWizardActivity {
     private void build() {
         mSections.removeAllViews();
         addColours();
+        addTheme();
         addWallpaper();
         addSettingsStyle();
         addStatusBar();
-        addGestures();
         addLockScreen();
         addFontAndShape();
         addUpdates();
@@ -198,9 +207,20 @@ public class PersonalizeActivity extends BaseSetupWizardActivity {
                 ChoiceGroup.swatch(0xFFF48FB1, 0xFF80DEEA));
         tiles.add(getString(R.string.personalize_style_alch3mist), null,
                 ChoiceGroup.swatch(p, t));
-        tiles.setSelected(clamp(Settings.System.getInt(mResolver, KEY_SETTINGS_STYLE, 0), 0, 3));
-        tiles.setOnChoiceListener(index ->
-                Settings.System.putInt(mResolver, KEY_SETTINGS_STYLE, index));
+        int styleSel = clamp(Settings.System.getInt(mResolver, KEY_SETTINGS_STYLE, 0), 0, 3);
+        // Preview: a little mock settings page drawn in the chosen style, updated as tiles are
+        // tapped, so each style is shown on the page itself.
+        mStyleMockWrap = new android.widget.FrameLayout(this);
+        mStyleMockWrap.addView(buildStyleMock(styleSel));
+        card.addView(mStyleMockWrap, barLp(104));
+        tiles.setSelected(styleSel);
+        tiles.setOnChoiceListener(index -> {
+            Settings.System.putInt(mResolver, KEY_SETTINGS_STYLE, index);
+            if (mStyleMockWrap != null) {
+                mStyleMockWrap.removeAllViews();
+                mStyleMockWrap.addView(buildStyleMock(index));
+            }
+        });
         card.addView(tiles, content());
 
         card.addView(switchRow(R.string.personalize_banner_title,
@@ -211,94 +231,295 @@ public class PersonalizeActivity extends BaseSetupWizardActivity {
 
     private void addStatusBar() {
         LinearLayout card = section(R.string.personalize_status_bar_title, 0);
+        // One live mock status bar for the whole section: the battery (and its percent) sit at
+        // the end and the clock hops left/centre/right - all three update as the chips are tapped,
+        // so each choice is visible on the page itself.
+        card.addView(statusBarPreview(
+                lineageInt(LineageSettings.System.STATUS_BAR_CLOCK, 2),
+                lineageInt(LineageSettings.System.STATUS_BAR_BATTERY_STYLE, 0),
+                lineageInt(LineageSettings.System.STATUS_BAR_SHOW_BATTERY_PERCENT, 0)),
+                barLp(28));
         label(card, R.string.personalize_battery_style);
         card.addView(chips(new int[] {R.string.personalize_battery_icon,
                 R.string.personalize_battery_circle, R.string.personalize_battery_dotted,
                 R.string.personalize_battery_text}, indexOf(BATTERY_STYLES,
                 lineageInt(LineageSettings.System.STATUS_BAR_BATTERY_STYLE, 0)),
-                i -> putLineage(LineageSettings.System.STATUS_BAR_BATTERY_STYLE,
-                        BATTERY_STYLES[i])), content());
+                i -> {
+                    putLineage(LineageSettings.System.STATUS_BAR_BATTERY_STYLE, BATTERY_STYLES[i]);
+                    updateBatteryPreview(BATTERY_STYLES[i]);
+                }), content());
         label(card, R.string.personalize_battery_percent);
         card.addView(chips(new int[] {R.string.personalize_percent_off,
                 R.string.personalize_percent_inside, R.string.personalize_percent_next_to},
                 indexOf(PERCENT_MODES,
                         lineageInt(LineageSettings.System.STATUS_BAR_SHOW_BATTERY_PERCENT, 0)),
-                i -> putLineage(LineageSettings.System.STATUS_BAR_SHOW_BATTERY_PERCENT,
-                        PERCENT_MODES[i])), content());
-        label(card, R.string.personalize_clock_position);
-        card.addView(chips(new int[] {R.string.personalize_clock_left,
-                R.string.personalize_clock_centre, R.string.personalize_clock_right},
-                indexOf(CLOCK_POSITIONS, lineageInt(LineageSettings.System.STATUS_BAR_CLOCK, 2)),
-                i -> putLineage(LineageSettings.System.STATUS_BAR_CLOCK, CLOCK_POSITIONS[i])),
-                content());
+                i -> {
+                    putLineage(LineageSettings.System.STATUS_BAR_SHOW_BATTERY_PERCENT,
+                            PERCENT_MODES[i]);
+                    updatePercentPreview(PERCENT_MODES[i]);
+                }), content());
     }
 
-    private void addGestures() {
-        LinearLayout card = section(R.string.personalize_gestures_title, 0);
-        boolean gestural = getResources().getInteger(
-                com.android.internal.R.integer.config_navBarInteractionMode) == 2;
-        if (gestural) {
-            label(card, R.string.personalize_back_sensitivity);
-            float scale = Settings.Secure.getFloatForUser(mResolver,
-                    Settings.Secure.BACK_GESTURE_INSET_SCALE_LEFT, 1.0f, UserHandle.USER_CURRENT);
-            int current = 1;
-            for (int i = 0; i < BACK_SCALES.length; i++) {
-                if (Math.abs(BACK_SCALES[i] - scale) < 0.01f) {
-                    current = i;
-                }
+    /** A mock status bar strip: a clock marker placed per STATUS_BAR_CLOCK (0 right, 1 centre,
+     *  2 left, matching SystemUI), and a battery glyph with its percent at the end. */
+    private View statusBarPreview(int clockPos, int batteryStyle, int percentMode) {
+        int m = M3.dp(this, 10);
+        android.widget.FrameLayout bar = new android.widget.FrameLayout(this);
+        bar.setBackground(M3.rounded(M3.surfaceHigh(this), M3.dp(this, 10)));
+
+        // End group: percent text then the battery glyph, pinned to the end.
+        LinearLayout end = new LinearLayout(this);
+        end.setOrientation(LinearLayout.HORIZONTAL);
+        end.setGravity(android.view.Gravity.CENTER_VERTICAL);
+        TextView percent = new TextView(this);
+        percent.setText("85%");
+        percent.setTextSize(TypedValue.COMPLEX_UNIT_SP, 11);
+        percent.setTypeface(M3.font(600));
+        percent.setTextColor(M3.onSurface(this));
+        percent.setPaddingRelative(0, 0, M3.dp(this, 4), 0);
+        end.addView(percent);
+        View battery = new View(this);
+        end.addView(battery, new LinearLayout.LayoutParams(M3.dp(this, 22), M3.dp(this, 11)));
+        android.widget.FrameLayout.LayoutParams elp = new android.widget.FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        elp.gravity = android.view.Gravity.CENTER_VERTICAL | android.view.Gravity.END;
+        elp.setMarginEnd(m);
+        bar.addView(end, elp);
+        mSbBattery = battery;
+        mSbPercent = percent;
+
+        // Clock marker.
+        View clock = new View(this);
+        clock.setBackground(M3.rounded(M3.primary(this), M3.dp(this, 3)));
+        android.widget.FrameLayout.LayoutParams clp = new android.widget.FrameLayout.LayoutParams(
+                M3.dp(this, 30), M3.dp(this, 10));
+        clp.gravity = android.view.Gravity.CENTER_VERTICAL | clockGravity(clockPos);
+        clp.setMarginStart(m);
+        clp.setMarginEnd(clockPos == 0 ? M3.dp(this, 56) : m);
+        bar.addView(clock, clp);
+        mClockPreviewDot = clock;
+
+        updateBatteryPreview(batteryStyle);
+        updatePercentPreview(percentMode);
+        return bar;
+    }
+
+    private void updateClockPreview(int position) {
+        if (mClockPreviewDot == null) {
+            return;
+        }
+        android.widget.FrameLayout.LayoutParams lp =
+                (android.widget.FrameLayout.LayoutParams) mClockPreviewDot.getLayoutParams();
+        lp.gravity = android.view.Gravity.CENTER_VERTICAL | clockGravity(position);
+        // When the clock sits at the end, keep it clear of the battery group.
+        lp.setMarginEnd(position == 0 ? M3.dp(this, 56) : M3.dp(this, 10));
+        mClockPreviewDot.setLayoutParams(lp);
+    }
+
+    /** Draw the battery glyph for STATUS_BAR_BATTERY_STYLE (0 icon, 1 circle, 3 dotted, 2 text). */
+    private void updateBatteryPreview(int style) {
+        if (mSbBattery == null) {
+            return;
+        }
+        int accent = M3.primary(this);
+        int w = M3.dp(this, 2);
+        android.graphics.drawable.GradientDrawable g =
+                new android.graphics.drawable.GradientDrawable();
+        boolean round = style == 1 || style == 3;
+        if (style == 1) {                       // circle: a ring
+            g.setShape(android.graphics.drawable.GradientDrawable.OVAL);
+            g.setColor(0x00000000);
+            g.setStroke(w, accent);
+        } else if (style == 3) {                // dotted: a dashed ring
+            g.setShape(android.graphics.drawable.GradientDrawable.OVAL);
+            g.setColor(0x00000000);
+            g.setStroke(w, accent, M3.dp(this, 2), M3.dp(this, 2));
+        } else if (style == 2) {                // text: the percent is the battery
+            g.setShape(android.graphics.drawable.GradientDrawable.RECTANGLE);
+            g.setColor(0x00000000);
+        } else {                                // icon: a filled battery
+            g.setShape(android.graphics.drawable.GradientDrawable.RECTANGLE);
+            g.setCornerRadius(M3.dp(this, 2));
+            g.setColor(accent);
+        }
+        mSbBattery.setBackground(g);
+        ViewGroup.LayoutParams lp = mSbBattery.getLayoutParams();
+        lp.width = round ? M3.dp(this, 13) : M3.dp(this, 22);
+        lp.height = round ? M3.dp(this, 13) : M3.dp(this, 11);
+        mSbBattery.setLayoutParams(lp);
+        mSbBattery.setVisibility(style == 2 ? View.GONE : View.VISIBLE);
+        if (mSbPercent != null) {
+            // In text style the percent IS the battery, so it is always shown.
+            mSbPercent.setPaddingRelative(0, 0, style == 2 ? 0 : M3.dp(this, 4), 0);
+        }
+    }
+
+    /** Show the percent per STATUS_BAR_SHOW_BATTERY_PERCENT (0 off, 1 inside, 2 next to). */
+    private void updatePercentPreview(int mode) {
+        if (mSbPercent == null) {
+            return;
+        }
+        boolean batteryIsText = mSbBattery != null && mSbBattery.getVisibility() == View.GONE;
+        mSbPercent.setVisibility(mode != 0 || batteryIsText ? View.VISIBLE : View.GONE);
+    }
+
+    private static int clockGravity(int position) {
+        switch (position) {
+            case 1:
+                return android.view.Gravity.CENTER_HORIZONTAL;
+            case 0:
+                return android.view.Gravity.END;
+            default:
+                return android.view.Gravity.START;
+        }
+    }
+
+    private LinearLayout.LayoutParams barLp(int heightDp) {
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, M3.dp(this, heightDp));
+        lp.topMargin = M3.dp(this, 10);
+        return lp;
+    }
+
+    private void applyClockSizePreview(boolean big) {
+        if (mClockSizePreview == null) {
+            return;
+        }
+        if (big) {
+            mClockSizePreview.setText("12\n30");
+            mClockSizePreview.setTextSize(TypedValue.COMPLEX_UNIT_SP, 30);
+            mClockSizePreview.setLineSpacing(0f, 0.95f);
+        } else {
+            mClockSizePreview.setText("12:30");
+            mClockSizePreview.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18);
+            mClockSizePreview.setLineSpacing(0f, 1f);
+        }
+    }
+
+    /** A mock QS tile filled with the shape for {@code key}, using SystemUI's own shape paths. */
+    private android.graphics.drawable.Drawable shapeDrawable(String key) {
+        String data = SHAPE_PATHS.get(key);
+        if (data == null) {
+            data = SHAPE_PATHS.get("circle");
+        }
+        android.graphics.Path path;
+        try {
+            path = android.util.PathParser.createPathFromPathData(data);
+        } catch (RuntimeException e) {
+            path = android.util.PathParser.createPathFromPathData(SHAPE_PATHS.get("circle"));
+        }
+        android.graphics.drawable.ShapeDrawable d = new android.graphics.drawable.ShapeDrawable(
+                new android.graphics.drawable.shapes.PathShape(path, 100f, 100f));
+        d.getPaint().setColor(M3.primary(this));
+        d.getPaint().setStyle(android.graphics.Paint.Style.FILL);
+        d.getPaint().setAntiAlias(true);
+        return d;
+    }
+
+    private int backWidth(float scale) {
+        return Math.round(M3.dp(this, 12) * scale);
+    }
+
+    /** A mock screen with the back-gesture reach shaded along both edges. */
+    private View backPreview(float scale) {
+        android.widget.FrameLayout screen = new android.widget.FrameLayout(this);
+        screen.setBackground(M3.rounded(M3.surfaceHigh(this), M3.dp(this, 10)));
+        int strip = (M3.primary(this) & 0x00FFFFFF) | 0x55000000;
+        mBackPreviewLeft = new View(this);
+        mBackPreviewLeft.setBackgroundColor(strip);
+        android.widget.FrameLayout.LayoutParams l = new android.widget.FrameLayout.LayoutParams(
+                backWidth(scale), ViewGroup.LayoutParams.MATCH_PARENT);
+        l.gravity = android.view.Gravity.START;
+        screen.addView(mBackPreviewLeft, l);
+        mBackPreviewRight = new View(this);
+        mBackPreviewRight.setBackgroundColor(strip);
+        android.widget.FrameLayout.LayoutParams r = new android.widget.FrameLayout.LayoutParams(
+                backWidth(scale), ViewGroup.LayoutParams.MATCH_PARENT);
+        r.gravity = android.view.Gravity.END;
+        screen.addView(mBackPreviewRight, r);
+        return screen;
+    }
+
+    private void updateBackPreview(float scale) {
+        for (View v : new View[] {mBackPreviewLeft, mBackPreviewRight}) {
+            if (v == null) {
+                continue;
             }
-            card.addView(chips(new int[] {R.string.personalize_back_low,
-                    R.string.personalize_back_default, R.string.personalize_back_high,
-                    R.string.personalize_back_highest}, current, i -> {
-                        Settings.Secure.putFloatForUser(mResolver,
-                                Settings.Secure.BACK_GESTURE_INSET_SCALE_LEFT, BACK_SCALES[i],
-                                UserHandle.USER_CURRENT);
-                        Settings.Secure.putFloatForUser(mResolver,
-                                Settings.Secure.BACK_GESTURE_INSET_SCALE_RIGHT, BACK_SCALES[i],
-                                UserHandle.USER_CURRENT);
-                    }), content());
-            card.addView(switchRow(R.string.personalize_gesture_bar_title,
-                    R.string.personalize_gesture_bar_summary,
-                    lineageInt(LineageSettings.System.NAVIGATION_BAR_HINT, 1) != 0,
-                    on -> putLineage(LineageSettings.System.NAVIGATION_BAR_HINT, on ? 1 : 0)));
-            boolean assistDefault = getResources().getBoolean(
-                    com.android.internal.R.bool.config_assistTouchGestureEnabledDefault);
-            card.addView(switchRow(R.string.personalize_assistant_title,
-                    R.string.personalize_assistant_summary,
-                    Settings.Secure.getIntForUser(mResolver,
-                            Settings.Secure.ASSIST_TOUCH_GESTURE_ENABLED, assistDefault ? 1 : 0,
-                            UserHandle.USER_CURRENT) != 0,
-                    on -> Settings.Secure.putIntForUser(mResolver,
-                            Settings.Secure.ASSIST_TOUCH_GESTURE_ENABLED, on ? 1 : 0,
-                            UserHandle.USER_CURRENT)));
+            ViewGroup.LayoutParams lp = v.getLayoutParams();
+            lp.width = backWidth(scale);
+            v.setLayoutParams(lp);
         }
-        card.addView(switchRow(R.string.personalize_dt2s_title,
-                R.string.personalize_dt2s_summary,
-                lineageInt(LineageSettings.System.DOUBLE_TAP_SLEEP_GESTURE, 1) != 0,
-                on -> putLineage(LineageSettings.System.DOUBLE_TAP_SLEEP_GESTURE, on ? 1 : 0)));
-        if (getResources().getBoolean(com.android.internal.R.bool.config_supportDoubleTapWake)) {
-            card.addView(switchRow(R.string.personalize_dt2w_title,
-                    R.string.personalize_dt2w_summary,
-                    Settings.Secure.getIntForUser(mResolver, Settings.Secure.DOUBLE_TAP_TO_WAKE,
-                            0, UserHandle.USER_CURRENT) != 0,
-                    on -> Settings.Secure.putIntForUser(mResolver,
-                            Settings.Secure.DOUBLE_TAP_TO_WAKE, on ? 1 : 0,
-                            UserHandle.USER_CURRENT)));
-        }
+    }
+
+    // The QS tile icon shapes, the same 100x100 paths SystemUI/ArcaniumUI use, for the preview.
+    private static final java.util.Map<String, String> SHAPE_PATHS = new java.util.HashMap<>();
+    static {
+        SHAPE_PATHS.put("circle", "M50 0A50 50,0,1,1,50 100A50 50,0,1,1,50 0");
+        SHAPE_PATHS.put("square", "M53.689 0.82 L53.689 .82 C67.434 .82 74.306 .82 79.758 2.978 "
+                + "87.649 6.103 93.897 12.351 97.022 20.242 99.18 25.694 99.18 32.566 "
+                + "99.18 46.311 V53.689 C99.18 67.434 99.18 74.306 97.022 79.758 "
+                + "93.897 87.649 87.649 93.897 79.758 97.022 74.306 99.18 67.434 99.18 "
+                + "53.689 99.18 H46.311 C32.566 99.18 25.694 99.18 20.242 97.022 "
+                + "12.351 93.897 6.103 87.649 2.978 79.758 .82 74.306 .82 67.434 "
+                + ".82 53.689 L.82 46.311 C.82 32.566 .82 25.694 2.978 20.242 "
+                + "6.103 12.351 12.351 6.103 20.242 2.978 25.694 .82 32.566 .82 "
+                + "46.311 .82Z");
+        SHAPE_PATHS.put("rounded_rect", "M50,0L88,0 C94.4,0 100,5.4 100 12 L100,88 "
+                + "C100,94.6 94.6 100 88 100 L12,100 C5.4,100 0,94.6 0,88 L0 12 "
+                + "C0 5.4 5.4 0 12 0 L50,0 Z");
+        SHAPE_PATHS.put("squircle", "M41.8,0h16.4C72.1,0 77.6,1.5 83,4.4c5.4,2.9 9.7,7.2 12.6,12.6"
+                + "c2.9,5.4 4.4,11 4.4,24.7v16.4c0,13.7 -1.5,19.3 -4.4,24.7"
+                + "c-2.9,5.4 -7.2,9.7 -12.6,12.6c-5.4,2.9 -11,4.4 -24.7,4.4H41.8"
+                + "c-13.8,0 -19.3,-1.5 -24.7,-4.4c-5.4,-2.9 -9.7,-7.1 -12.7,-12.5"
+                + "S0,72 0,58.3V41.9c0,-13.8 1.5,-19.3 4.4,-24.7S11.6,7.4 17,4.5"
+                + "S28.1,0 41.8,0z");
+        SHAPE_PATHS.put("four_sided_cookie", "M39.888,4.517C46.338 7.319 53.662 7.319 60.112 "
+                + "4.517L63.605 3C84.733 -6.176 106.176 15.268 97 36.395L95.483 39.888"
+                + "C92.681 46.338 92.681 53.662 95.483 60.112L97 63.605"
+                + "C106.176 84.732 84.733 106.176 63.605 97L60.112 95.483"
+                + "C53.662 92.681 46.338 92.681 39.888 95.483L36.395 97"
+                + "C15.267 106.176 -6.176 84.732 3 63.605L4.517 60.112"
+                + "C7.319 53.662 7.319 46.338 4.517 39.888L3 36.395"
+                + "C -6.176 15.268 15.267 -6.176 36.395 3Z");
+        SHAPE_PATHS.put("hexagon", "M12,0 88,0 100,50 88,100 12,100 0,50 12,0 Z");
+        SHAPE_PATHS.put("flower", "M50,0 C60.6,0 69.9,5.3 75.6,13.5 78.5,17.8 82.3,21.5 86.6,24.5 "
+                + "94.7,30.1 100,39.4 100,50 100,60.6 94.7,69.9 86.5,75.6 "
+                + "82.2,78.5 78.5,82.3 75.5,86.6 69.9,94.7 60.6,100 50,100 "
+                + "39.4,100 30.1,94.7 24.4,86.5 21.5,82.2 17.7,78.5 13.4,75.5 "
+                + "5.3,69.9 0,60.6 0,50 0,39.4 5.3,30.1 13.5,24.4 "
+                + "17.8,21.5 21.5,17.7 24.5,13.4 30.1,5.3 39.4,0 50,0 Z");
+        SHAPE_PATHS.put("pebble", "M55,0 C25,0 0,25 0,50 0,78 28,100 55,100 85,100 100,85 100,58 "
+                + "100,30 86,0 55,0 Z");
     }
 
     private void addLockScreen() {
         LinearLayout card = section(R.string.personalize_lock_screen_title, 0);
         label(card, R.string.personalize_clock_size);
+        boolean doubleLine = Settings.Secure.getIntForUser(mResolver,
+                Settings.Secure.LOCKSCREEN_USE_DOUBLE_LINE_CLOCK, 1, UserHandle.USER_CURRENT) != 0;
+        // Preview: a mock lock-screen clock - stacked and large for Big, one line for Small.
+        TextView clockSize = new TextView(this);
+        clockSize.setGravity(android.view.Gravity.CENTER);
+        clockSize.setTextColor(M3.onSurface(this));
+        clockSize.setTypeface(M3.font(600));
+        LinearLayout clockWrap = new LinearLayout(this);
+        clockWrap.setGravity(android.view.Gravity.CENTER);
+        clockWrap.setBackground(M3.rounded(M3.surfaceHigh(this), M3.dp(this, 14)));
+        clockWrap.addView(clockSize, new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        mClockSizePreview = clockSize;
+        applyClockSizePreview(doubleLine);
+        card.addView(clockWrap, barLp(76));
         ChoiceGroup tiles = new ChoiceGroup(this, ChoiceGroup.TILES);
         tiles.add(getString(R.string.personalize_clock_big), null, null);
         tiles.add(getString(R.string.personalize_clock_small), null, null);
-        tiles.setSelected(Settings.Secure.getIntForUser(mResolver,
-                Settings.Secure.LOCKSCREEN_USE_DOUBLE_LINE_CLOCK, 1, UserHandle.USER_CURRENT)
-                != 0 ? 0 : 1);
-        tiles.setOnChoiceListener(i -> Settings.Secure.putIntForUser(mResolver,
-                Settings.Secure.LOCKSCREEN_USE_DOUBLE_LINE_CLOCK, i == 0 ? 1 : 0,
-                UserHandle.USER_CURRENT));
+        tiles.setSelected(doubleLine ? 0 : 1);
+        tiles.setOnChoiceListener(i -> {
+            Settings.Secure.putIntForUser(mResolver,
+                    Settings.Secure.LOCKSCREEN_USE_DOUBLE_LINE_CLOCK, i == 0 ? 1 : 0,
+                    UserHandle.USER_CURRENT);
+            applyClockSizePreview(i == 0);
+        });
         card.addView(tiles, content());
         boolean aodDefault = getResources().getBoolean(
                 com.android.internal.R.bool.config_dozeAlwaysOnEnabled);
@@ -328,9 +549,26 @@ public class PersonalizeActivity extends BaseSetupWizardActivity {
                     chips.add("android".equals(pkg) ? getString(R.string.personalize_font_default)
                             : label(pkg), null, null);
                 }
+                // Preview: a sample word rendered in the chosen font (best-effort - loads the
+                // font from the overlay when it ships one, otherwise shows the sample as-is).
+                TextView fontSample = new TextView(this);
+                fontSample.setText(R.string.personalize_font_sample);
+                fontSample.setGravity(android.view.Gravity.CENTER);
+                fontSample.setTextColor(M3.onSurface(this));
+                fontSample.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20);
+                LinearLayout fontWrap = new LinearLayout(this);
+                fontWrap.setGravity(android.view.Gravity.CENTER);
+                fontWrap.setBackground(M3.rounded(M3.surfaceHigh(this), M3.dp(this, 14)));
+                fontWrap.addView(fontSample, new LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+                mFontSample = fontSample;
+                applyFontPreview(current);
+                card.addView(fontWrap, barLp(52));
                 chips.setSelected(Math.max(0, fonts.indexOf(current)));
-                chips.setOnChoiceListener(i ->
-                        themes.setOverlayEnabled(ThemeUtils.FONT_KEY, fonts.get(i), "android"));
+                chips.setOnChoiceListener(i -> {
+                    themes.setOverlayEnabled(ThemeUtils.FONT_KEY, fonts.get(i), "android");
+                    applyFontPreview(fonts.get(i));
+                });
                 card.addView(chips, content());
             }
         } catch (RuntimeException e) {
@@ -345,9 +583,21 @@ public class PersonalizeActivity extends BaseSetupWizardActivity {
                 current = i;
             }
         }
-        card.addView(chips(TILE_SHAPE_NAMES, current, i ->
+        // Preview: a mock QS tile drawn in the chosen shape, using the same paths SystemUI uses.
+        LinearLayout shapeWrap = new LinearLayout(this);
+        shapeWrap.setGravity(android.view.Gravity.CENTER);
+        View shapeView = new View(this);
+        shapeView.setBackground(shapeDrawable(TILE_SHAPES[current]));
+        shapeWrap.addView(shapeView, new LinearLayout.LayoutParams(M3.dp(this, 36), M3.dp(this, 36)));
+        mShapePreview = shapeView;
+        card.addView(shapeWrap, barLp(52));
+        card.addView(chips(TILE_SHAPE_NAMES, current, i -> {
                 Settings.System.putStringForUser(mResolver, Settings.System.QS_TILE_ICON_SHAPE,
-                        TILE_SHAPES[i], UserHandle.USER_CURRENT)), content());
+                        TILE_SHAPES[i], UserHandle.USER_CURRENT);
+                if (mShapePreview != null) {
+                    mShapePreview.setBackground(shapeDrawable(TILE_SHAPES[i]));
+                }
+            }), content());
     }
 
     private void addUpdates() {
@@ -364,6 +614,126 @@ public class PersonalizeActivity extends BaseSetupWizardActivity {
                                     | Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
                     sendBroadcast(intent);
                 }), content());
+    }
+
+    // ---- Theme ----
+
+    private void addTheme() {
+        LinearLayout card = section(R.string.personalize_theme_title,
+                R.string.personalize_theme_summary);
+        android.app.UiModeManager ui = getSystemService(android.app.UiModeManager.class);
+        int mode = ui != null ? ui.getNightMode() : android.app.UiModeManager.MODE_NIGHT_AUTO;
+        int sel = mode == android.app.UiModeManager.MODE_NIGHT_NO ? 0
+                : (mode == android.app.UiModeManager.MODE_NIGHT_YES ? 1 : 2);
+        card.addView(chips(new int[] {R.string.personalize_theme_light,
+                R.string.personalize_theme_dark, R.string.personalize_theme_auto}, sel, i -> {
+                    int m = i == 0 ? android.app.UiModeManager.MODE_NIGHT_NO
+                            : (i == 1 ? android.app.UiModeManager.MODE_NIGHT_YES
+                            : android.app.UiModeManager.MODE_NIGHT_AUTO);
+                    try {
+                        if (ui != null) {
+                            ui.setNightMode(m);
+                        }
+                    } catch (RuntimeException e) {
+                        Log.w(TAG, "Couldn't set the theme", e);
+                    }
+                }), content());
+    }
+
+    // ---- Settings-style preview ----
+
+    private GradientDrawable rect(int color, int radiusDp) {
+        GradientDrawable d = new GradientDrawable();
+        d.setColor(color);
+        d.setCornerRadius(M3.dp(this, radiusDp));
+        return d;
+    }
+
+    /** A little mock settings page in the chosen style, so each style shows on the page. */
+    private View buildStyleMock(int style) {
+        int pad = M3.dp(this, 10);
+        LinearLayout mock = new LinearLayout(this);
+        mock.setOrientation(LinearLayout.VERTICAL);
+        mock.setPadding(pad, pad, pad, pad);
+        mock.setBackground(rect(M3.surfaceHigh(this), 14));
+        GradientDrawable header;
+        switch (style) {
+            case 1: // Minimal - flat, outlined, square-ish
+                header = rect(M3.surface(this), 4);
+                header.setStroke(M3.dp(this, 1), M3.outline(this));
+                break;
+            case 2: // Aurora - soft gradient
+                header = new GradientDrawable(GradientDrawable.Orientation.LEFT_RIGHT,
+                        new int[] {0xFFF48FB1, 0xFF80DEEA});
+                header.setCornerRadius(M3.dp(this, 12));
+                break;
+            case 3: // Alch3mist - accent gradient, rounded
+                header = new GradientDrawable(GradientDrawable.Orientation.LEFT_RIGHT,
+                        new int[] {M3.primary(this), M3.tonal(this)});
+                header.setCornerRadius(M3.dp(this, 16));
+                break;
+            default: // Stock
+                header = rect(M3.primary(this), 8);
+        }
+        View head = new View(this);
+        head.setBackground(header);
+        mock.addView(head, new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, M3.dp(this, 20)));
+        int rowRadius = style == 1 ? 4 : (style == 0 ? 8 : 16);
+        for (int i = 0; i < 2; i++) {
+            View row = new View(this);
+            GradientDrawable rb = rect(M3.surface(this), rowRadius);
+            if (style == 1) {
+                rb.setStroke(M3.dp(this, 1), M3.outline(this));
+            }
+            row.setBackground(rb);
+            LinearLayout.LayoutParams rp = new LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, M3.dp(this, 16));
+            rp.topMargin = M3.dp(this, 7);
+            mock.addView(row, rp);
+        }
+        return mock;
+    }
+
+    // ---- Font preview ----
+
+    private void applyFontPreview(String pkg) {
+        if (mFontSample == null) {
+            return;
+        }
+        android.graphics.Typeface tf = null;
+        if (pkg != null && !"android".equals(pkg)) {
+            try {
+                android.content.res.AssetManager am = createPackageContext(pkg, 0).getAssets();
+                String path = findFontAsset(am, "fonts");
+                if (path == null) {
+                    path = findFontAsset(am, "");
+                }
+                if (path != null) {
+                    tf = new android.graphics.Typeface.Builder(am, path).build();
+                }
+            } catch (Exception e) {
+                Log.w(TAG, "Couldn't load the font preview for " + pkg, e);
+            }
+        }
+        mFontSample.setTypeface(tf != null ? tf : android.graphics.Typeface.DEFAULT);
+    }
+
+    private String findFontAsset(android.content.res.AssetManager am, String dir) {
+        try {
+            String[] list = am.list(dir);
+            if (list != null) {
+                for (String f : list) {
+                    String low = f.toLowerCase(java.util.Locale.ROOT);
+                    if (low.endsWith(".ttf") || low.endsWith(".otf")) {
+                        return dir.isEmpty() ? f : dir + "/" + f;
+                    }
+                }
+            }
+        } catch (IOException e) {
+            // no assets in this folder
+        }
+        return null;
     }
 
     // ---- Colours ----

@@ -66,6 +66,12 @@
     <string name="personalize_font_title">Font and shapes</string>
     <string name="personalize_font">Font</string>
     <string name="personalize_font_default">Default</string>
+    <string name="personalize_font_sample">Aa Gg 123</string>
+    <string name="personalize_theme_title">Theme</string>
+    <string name="personalize_theme_summary">Light or dark across the whole system</string>
+    <string name="personalize_theme_light">Light</string>
+    <string name="personalize_theme_dark">Dark</string>
+    <string name="personalize_theme_auto">Auto</string>
     <string name="personalize_tile_shape">Quick settings icon shape</string>
     <string name="personalize_shape_circle">Circle</string>
     <string name="personalize_shape_squircle">Squircle</string>

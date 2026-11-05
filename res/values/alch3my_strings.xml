@@ -21,14 +21,6 @@
     <string name="personalize_wallpaper_summary">The Alch3myOS wallpaper, or any other</string>
     <string name="personalize_wallpaper_alch3my">Alch3myOS</string>
     <string name="personalize_wallpaper_more">More wallpapers</string>
-    <string name="personalize_settings_style_title">Settings style</string>
-    <string name="personalize_settings_style_summary">How the Settings home page looks</string>
-    <string name="personalize_style_stock">Stock</string>
-    <string name="personalize_style_minimal">Minimal</string>
-    <string name="personalize_style_aurora">Aurora</string>
-    <string name="personalize_style_alch3mist">Alch3mist</string>
-    <string name="personalize_banner_title">Dashboard banner</string>
-    <string name="personalize_banner_summary">The Alch3myOS banner at the top of ArcaniumUI</string>
     <string name="personalize_status_bar_title">Status bar</string>
     <string name="personalize_battery_style">Battery</string>
     <string name="personalize_battery_icon">Icon</string>

@@ -64,10 +64,6 @@ public class PersonalizeActivity extends BaseSetupWizardActivity {
         R.string.personalize_colour_slate,
     };
 
-    // Settings style and the dashboard banner (read by Settings and ArcaniumUI)
-    private static final String KEY_SETTINGS_STYLE = "alch3my_settings_style";
-    private static final String KEY_SHOW_BANNER = "alch3my_arcanium_show_banner";
-
     // Status bar, as SystemUI reads them
     private static final int[] BATTERY_STYLES = {0, 1, 3, 2};
     private static final int[] PERCENT_MODES = {0, 1, 2};
@@ -103,7 +99,6 @@ public class PersonalizeActivity extends BaseSetupWizardActivity {
     private TextView mClockSizePreview;
     private View mBackPreviewLeft;
     private View mBackPreviewRight;
-    private android.widget.FrameLayout mStyleMockWrap;
     private TextView mFontSample;
 
     @Override
@@ -135,7 +130,6 @@ public class PersonalizeActivity extends BaseSetupWizardActivity {
         addColours();
         addTheme();
         addWallpaper();
-        addSettingsStyle();
         addStatusBar();
         addLockScreen();
         addFontAndShape();
@@ -191,42 +185,6 @@ public class PersonalizeActivity extends BaseSetupWizardActivity {
             }
         });
         card.addView(tiles, content());
-    }
-
-    private void addSettingsStyle() {
-        LinearLayout card = section(R.string.personalize_settings_style_title,
-                R.string.personalize_settings_style_summary);
-        ChoiceGroup tiles = new ChoiceGroup(this, ChoiceGroup.TILES);
-        int p = M3.primary(this);
-        int t = M3.tonal(this);
-        tiles.add(getString(R.string.personalize_style_stock), null,
-                ChoiceGroup.swatch(M3.surfaceHigh(this), M3.surfaceHigh(this)));
-        tiles.add(getString(R.string.personalize_style_minimal), null,
-                ChoiceGroup.swatch(M3.outline(this), M3.surface(this)));
-        tiles.add(getString(R.string.personalize_style_aurora), null,
-                ChoiceGroup.swatch(0xFFF48FB1, 0xFF80DEEA));
-        tiles.add(getString(R.string.personalize_style_alch3mist), null,
-                ChoiceGroup.swatch(p, t));
-        int styleSel = clamp(Settings.System.getInt(mResolver, KEY_SETTINGS_STYLE, 0), 0, 3);
-        // Preview: a little mock settings page drawn in the chosen style, updated as tiles are
-        // tapped, so each style is shown on the page itself.
-        mStyleMockWrap = new android.widget.FrameLayout(this);
-        mStyleMockWrap.addView(buildStyleMock(styleSel));
-        card.addView(mStyleMockWrap, barLp(104));
-        tiles.setSelected(styleSel);
-        tiles.setOnChoiceListener(index -> {
-            Settings.System.putInt(mResolver, KEY_SETTINGS_STYLE, index);
-            if (mStyleMockWrap != null) {
-                mStyleMockWrap.removeAllViews();
-                mStyleMockWrap.addView(buildStyleMock(index));
-            }
-        });
-        card.addView(tiles, content());
-
-        card.addView(switchRow(R.string.personalize_banner_title,
-                R.string.personalize_banner_summary,
-                Settings.System.getInt(mResolver, KEY_SHOW_BANNER, 1) != 0,
-                on -> Settings.System.putInt(mResolver, KEY_SHOW_BANNER, on ? 1 : 0)));
     }
 
     private void addStatusBar() {
@@ -640,61 +598,6 @@ public class PersonalizeActivity extends BaseSetupWizardActivity {
                 }), content());
     }
 
-    // ---- Settings-style preview ----
-
-    private GradientDrawable rect(int color, int radiusDp) {
-        GradientDrawable d = new GradientDrawable();
-        d.setColor(color);
-        d.setCornerRadius(M3.dp(this, radiusDp));
-        return d;
-    }
-
-    /** A little mock settings page in the chosen style, so each style shows on the page. */
-    private View buildStyleMock(int style) {
-        int pad = M3.dp(this, 10);
-        LinearLayout mock = new LinearLayout(this);
-        mock.setOrientation(LinearLayout.VERTICAL);
-        mock.setPadding(pad, pad, pad, pad);
-        mock.setBackground(rect(M3.surfaceHigh(this), 14));
-        GradientDrawable header;
-        switch (style) {
-            case 1: // Minimal - flat, outlined, square-ish
-                header = rect(M3.surface(this), 4);
-                header.setStroke(M3.dp(this, 1), M3.outline(this));
-                break;
-            case 2: // Aurora - soft gradient
-                header = new GradientDrawable(GradientDrawable.Orientation.LEFT_RIGHT,
-                        new int[] {0xFFF48FB1, 0xFF80DEEA});
-                header.setCornerRadius(M3.dp(this, 12));
-                break;
-            case 3: // Alch3mist - accent gradient, rounded
-                header = new GradientDrawable(GradientDrawable.Orientation.LEFT_RIGHT,
-                        new int[] {M3.primary(this), M3.tonal(this)});
-                header.setCornerRadius(M3.dp(this, 16));
-                break;
-            default: // Stock
-                header = rect(M3.primary(this), 8);
-        }
-        View head = new View(this);
-        head.setBackground(header);
-        mock.addView(head, new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, M3.dp(this, 20)));
-        int rowRadius = style == 1 ? 4 : (style == 0 ? 8 : 16);
-        for (int i = 0; i < 2; i++) {
-            View row = new View(this);
-            GradientDrawable rb = rect(M3.surface(this), rowRadius);
-            if (style == 1) {
-                rb.setStroke(M3.dp(this, 1), M3.outline(this));
-            }
-            row.setBackground(rb);
-            LinearLayout.LayoutParams rp = new LinearLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT, M3.dp(this, 16));
-            rp.topMargin = M3.dp(this, 7);
-            mock.addView(row, rp);
-        }
-        return mock;
-    }
-
     // ---- Font preview ----
 
     private void applyFontPreview(String pkg) {
@@ -910,9 +813,5 @@ public class PersonalizeActivity extends BaseSetupWizardActivity {
             }
         }
         return 0;
-    }
-
-    private static int clamp(int v, int min, int max) {
-        return Math.max(min, Math.min(max, v));
     }
 }

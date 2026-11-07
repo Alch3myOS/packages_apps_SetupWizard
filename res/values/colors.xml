@@ -7,6 +7,10 @@
 <resources>
     <color name="alch3my_accent">@*android:color/accent_device_default_light</color>
 
+    <!-- Outline drawn around the Skip button label so it stands out. Theme-aware:
+         black in light mode, white in dark mode (see values-night). -->
+    <color name="skip_text_outline">#CC000000</color>
+
     <color name="button_bar_text_enabled">#ff1e1e1e</color>
     <color name="button_bar_text_disabled">#321e1e1e</color>
 

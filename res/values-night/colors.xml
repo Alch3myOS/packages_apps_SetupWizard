@@ -5,4 +5,7 @@
 -->
 <resources>
     <color name="divider">#40ffffff</color>
+
+    <!-- Dark theme: light label fill, so outline the Skip label in white. -->
+    <color name="skip_text_outline">#CCFFFFFF</color>
 </resources>
